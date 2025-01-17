@@ -9,8 +9,10 @@ async function buildPage() {
   })
 
   try {
+    // create new html page with all components inside
+
     const components = await fsPromise.readdir(path.join(__dirname, "components"));
-    const layout = await fs.readFile(path.join(__dirname, "template.html"), "utf-8", (err,data) => {
+    await fs.readFile(path.join(__dirname, "template.html"), "utf-8", (err,data) => {
       if (err) throw err;
 
       for (let item of components) {
@@ -27,6 +29,20 @@ async function buildPage() {
       }
     })
     
+    // merge styles into one css file
+
+    const styles = await fsPromise.readdir(path.join(__dirname, "styles"), { withFileTypes: true });
+    const mergedStyles = path.join(__dirname, "project-dist/style.css");
+    for (let style of styles) {
+      if (style.name.split(".")[1] !== "css") continue;
+      const readableStream = fs.createReadStream(`${style.path}/${style.name}`, "utf-8");
+      readableStream.on("data", (chunk) => data += chunk)
+      readableStream.on("end", () => {
+        fs.writeFile(mergedStyles, data, (err) => {
+          if (err) throw err;
+        })
+      })
+    }
   } catch (err) {
     console.log(err);
   }

@@ -13,15 +13,17 @@ fs.writeFile(path.join(__dirname, "text.txt"),
   })
 
 stdin.on("data", (data) => {
+  if (data.toString().trim() === "exit") {
+    console.log("goodbye\n");
+    process.exit();
+  }
+  
   fs.writeFile(path.join(__dirname, "text.txt"),
     text += data.toString(),
     (err) => {
       if (err) throw err;
     });
-  if (data.toString().trim() === "exit") {
-    console.log("goodbye\n");
-    process.exit();
-  }
+
   process.on("SIGINT", () => {
     console.log("\ngoodbye\n");
     process.exit();
